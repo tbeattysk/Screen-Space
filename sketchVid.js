@@ -15,26 +15,34 @@ let poseNet;
 let poses = [];
 let skeleton;
 let bodies;
-let desiredWindowWidth = 7920  //7935
-let desiredWindowHeight = 2080  //2034
-let doorwayWidth = 300
-let doorwayHeight = 400
+let desiredWindowWidth = 1000  //7935
+let desiredWindowHeight = 600  //2034
+let doorwayWidth = 600
+let doorwayHeight = 500
 let cutOutWidth = doorwayWidth * desiredWindowHeight/doorwayHeight
-let mainScreenWidth = 6000
-let smallX = 3000
-let largeX = desiredWindowWidth-500
-
+let mainScreenWidth = 800
+let smallX = 200
+let largeX = desiredWindowWidth
 
 function setup() {
   //frameRate(50);
   createCanvas(desiredWindowWidth, desiredWindowHeight);
-  capture = createCapture(VIDEO);
+  capture = createVideo("ppls2.mp4", onVideoLoad);
+  capture.autoplay(false);
+  capture.hide();
+  capture.speed(1);
   poseNet = ml5.poseNet(capture, modelReady);
   poseNet.on("pose", gotPoses);
   newGraphic = createGraphics(1920,1080);
   bodies = new BodyManager(newGraphic)
-}
 
+  
+}
+function onVideoLoad() {
+  // The media will not play until some explicitly triggered.
+
+  capture.volume(0);
+}
 function draw() {
   background(0)
   newGraphic.clear()
@@ -95,16 +103,22 @@ function modelReady() {
   console.log("Model Loaded");
 }
 
+
+function onMousePressed() {
+  capture.play();
+}
 function keyPressed() {
-  if (key == "z"){
+  if (key == "z") {
+    capture.play();
     print(capture.height,capture.width)
   }
   if (key == "a") {
-    print(windowHeight,windowWidth);
+    capture.pause();
+    print(poses);
   }
 }
 function windowResized() {
-  //resizeCanvas(windowWidth, windowHeight);
+  resizeCanvas(windowWidth, windowHeight);
 }
 function drawKeypoints(pose) {
   for (let i = 0; i < pose.keypoints.length; i++) {

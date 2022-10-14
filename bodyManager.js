@@ -1,5 +1,6 @@
 class BodyManager{
-    constructor(){
+    constructor(c){
+        this.c = c
         this.bodies=[];
         this.colors =  [
             color("#FF0000C2"),
@@ -16,7 +17,7 @@ class BodyManager{
               this.bodies.splice(i,1)
               i--
             }else{
-              this.bodies[i].display();
+              this.bodies[i].display(this.c);
               this.bodies[i].choiceDone = false;
             }
           }

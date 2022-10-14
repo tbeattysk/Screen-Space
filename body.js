@@ -19,11 +19,11 @@ class Body{
       this.bugs.push(new BodyBug(14,random(-10,0),random(-80,80),this.pose.keypoints))
     }
 
-    display(){  
+    display(c){  
       if(this.pose){
-        rectMode(CORNERS)
+        c.rectMode(CORNERS)
         let k = this.pose.keypoints
-        fill(this.color)
+        c.fill(this.color)
         // rect(
         //   k[8].position.x, k[2].position.y,
         //   k[7].position.x,k[15].position.y
@@ -31,20 +31,20 @@ class Body{
         //this.drawKeypoints();
         this.z = 1500 - this.pose.leftAnkle.y
         for(var i = 0; i<this.bugs.length; i++){
-          this.bugs[i].display(k, this.z)
+          this.bugs[i].display(k, this.z, c)
         }
         
-        let depthtext = this.z.toFixed(1) + " height"
-         textSize(30)
-         fill(255,255,255)
-        text(depthtext,this.pose.leftAnkle.x,this.pose.leftAnkle.y)
+        // let depthtext = this.z.toFixed(1) + " height"
+        //  textSize(30)
+        //  fill(255,255,255)
+        // text(depthtext,this.pose.leftAnkle.x,this.pose.leftAnkle.y)
 
         if(this.noBestPose){
             this.lostFrames++
         }else{
           this.lostFrames = 0
         }
-        if(this.lostFrames > 50){
+        if(this.lostFrames > 5){
             this.queueFree = true
         }
       }
