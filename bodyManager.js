@@ -10,16 +10,36 @@ class BodyManager{
             color("#FFEB3BC2"),
           ];
         this.colorTicker =  1;
+        this.sickRadius = 0
     }
     display(){
         for(var i = 0; i<this.bodies.length; i++){
+            if(this.bodies[i].sick){
+                for(var j = 0; j<this.bodies.length; j++){
+                    if(i!=j){
+                        this.bodies[j].checkSicknessSpread(this.bodies[i].pose.nose,
+                             //400) 
+                            this.bodies[i].sick/4) //spread range (body.sick increases 1 pixel)
+                    }
+                }
+            }else{
+                if(this.sickZoneDistance(this.bodies[i]) < this.sickRadius){
+                    this.bodies[i].makeSick()
+                    this.sickRadius /= 2
+                }
+            }
             if(this.bodies[i].queueFree){
-              this.bodies.splice(i,1)
-              i--
+              this.bodies.splice(i,1);
+              i--;
             }else{
               this.bodies[i].display(this.c);
               this.bodies[i].choiceDone = false;
             }
+          }
+          if(this.bodies.length == 0){
+            this.sickRadius = 0
+          }{
+            this.sickRadius+= 0.3
           }
     }
     managePoses(poses){
@@ -60,6 +80,22 @@ class BodyManager{
                 }
             }
         }
+       
+        if(this.inEntryZone()){
+            if(state == 0){
+                if(state1Timer > 30){
+                state = 1
+                yOffset = 0
+                this.sickRadius /=2
+                }else{
+                state1Timer++
+                }
+            }
+        }else{
+          state1Timer = 0
+          state = 0
+          yOffset = 0
+        }
     }
     checkShaddow(poseIndex,poses){
         for(let i = 0; i<poses.length; i++){
@@ -71,5 +107,20 @@ class BodyManager{
         }
         return false
     }
-
+    makeOneSick(){
+        this.bodies[Math.floor(Math.random(bodies.length))].makeSick()
+    }
+    inEntryZone(){
+        let inEntryZone = false;
+        for(let i = 0; i <this.bodies.length; i++){
+            if(this.bodies[i].pose.nose.x < doorwayWidth && 
+                this.bodies[i].pose.nose.x < doorwayHeight){
+                    return true
+            }
+        }
+        return false
+    }
+    sickZoneDistance(body){
+        return dist(body.pose.rightAnkle.x, body.pose.rightAnkle.y, 450, 250)*2
+    }
 }
