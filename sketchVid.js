@@ -15,14 +15,13 @@ let poseNet;
 let poses = [];
 let skeleton;
 let bodies;
+let feed = false
 let desiredWindowWidth = 1000  //7935
 let desiredWindowHeight = 600  //2034
 let doorwayWidth = 600
 let doorwayHeight = 500
-let cutOutWidth = doorwayWidth * desiredWindowHeight/doorwayHeight
-let mainScreenWidth = 800
-let smallX = 200
-let largeX = desiredWindowWidth
+let fadeFrame
+
 
 function setup() {
   //frameRate(50);
@@ -45,7 +44,10 @@ function onVideoLoad() {
 }
 function draw() {
   background(0)
+  //fadeFrame.push(newGraphic.get());
   newGraphic.clear()
+
+
   //newGraphic.translate(-newGraphic.width,0)
   let cutOutSmall = capture.get(0, 0, 
     doorwayWidth, doorwayHeight)
@@ -63,10 +65,15 @@ function draw() {
   //image(newGraphic,0,0,192,108)
   push()
   scale(-1,1)
-  image(cutOutSmall,-smallX,0,cutOutWidth,desiredWindowHeight)
-  image(cutOutSmallGraphic, -smallX,0,cutOutWidth,desiredWindowHeight)
-  image(cutOutLarge,-largeX,0,mainScreenWidth,desiredWindowHeight)
-  image(cutOutLargeGraphic, -largeX,0,mainScreenWidth,desiredWindowHeight)
+  if(feed){
+    image(cutOutSmall,-width,0,width,height)
+    image(cutOutSmallGraphic, -width,0,width,height)
+  }else{
+    tint(100)
+    image(cutOutLarge,-width,0,width,height)
+    noTint()
+    image(cutOutLargeGraphic, -width,0,width,height)
+  }
   pop()
   //image(newGraphic, 0, 0, desiredWindowHeight, cutOutWidth);
   //filter(GRAY)
@@ -101,10 +108,13 @@ function comparePoses(pose1, pose2, threshold) {
 
 function modelReady() {
   console.log("Model Loaded");
+  fill(255)
+  text("click to start", 20, height/2)
 }
 
 
-function onMousePressed() {
+function mousePressed() {
+  feed = !feed;
   capture.play();
 }
 function keyPressed() {
@@ -115,6 +125,10 @@ function keyPressed() {
   if (key == "a") {
     capture.pause();
     print(poses);
+  }
+  if ( key == "s"){
+    bodies.makeOneSick()
+    
   }
 }
 function windowResized() {

@@ -15,19 +15,27 @@ let poseNet;
 let poses = [];
 let skeleton;
 let bodies;
-let desiredWindowWidth = 7920  //7935
+let desiredWindowWidth = 8200  //7935
 let desiredWindowHeight = 2080  //2034
-let doorwayWidth = 300
+let doorwayWidth = 200
 let doorwayHeight = 400
 let cutOutWidth = doorwayWidth * desiredWindowHeight/doorwayHeight
 let mainScreenWidth = 6000
-let smallX = 3000
-let largeX = desiredWindowWidth-500
 
+let state = 0
+let state1Timer = 0
+let status = ["Searching... PLEASE WAIT", "       Scanning Microbes...", " Microbes Identified: ENTER"]
+let scanSound
+let doneSound
+let yOffset = 80
+
+let kgraphic 
 
 function setup() {
   //frameRate(50);
   createCanvas(desiredWindowWidth, desiredWindowHeight);
+  scanSound = loadSound("scanner.mp3")
+  doneSound = loadSound("done.mp3")
   capture = createCapture(VIDEO);
   poseNet = ml5.poseNet(capture, modelReady);
   poseNet.on("pose", gotPoses);
@@ -38,28 +46,51 @@ function setup() {
 function draw() {
   background(0)
   newGraphic.clear()
-  //newGraphic.translate(-newGraphic.width,0)
-  let cutOutSmall = capture.get(0, 0, 
-    doorwayWidth, doorwayHeight)
-  let cutOutLarge = capture.get(doorwayWidth,0,
-    capture.width,capture.height)
-  cutOutLarge.filter(GRAY)
   bodies.display(newGraphic);
-  let cutOutLargeGraphic = newGraphic.get(doorwayWidth,0,
-    capture.width,capture.height)
-  let cutOutSmallGraphic = newGraphic.get(0, 0, 
-    doorwayWidth, doorwayHeight)
-  cutOutSmallGraphic.filter(GRAY)
- 
-  //newGraphic.rect(0,0,200,200)
-  //image(newGraphic,0,0,192,108)
+  //newGraphic.fill(255,0,0,50)
+  //newGraphic.circle(450,250,bodies.sickRadius)
+
   push()
   scale(-1,1)
-  image(cutOutSmall,-smallX,0,cutOutWidth,desiredWindowHeight)
-  image(cutOutSmallGraphic, -smallX,0,cutOutWidth,desiredWindowHeight)
-  image(cutOutLarge,-largeX,0,mainScreenWidth,desiredWindowHeight)
-  image(cutOutLargeGraphic, -largeX,0,mainScreenWidth,desiredWindowHeight)
+  
+  let cutOutSmall
+  if(state==1){
+    cutOutSmall = capture.get(0, 0, doorwayWidth, doorwayHeight)
+    cutOutSmall.loadPixels()
+    waveThing(cutOutSmall)
+    cutOutSmall.updatePixels()
+    image(cutOutSmall,-3000,0,1600,desiredWindowHeight)
+
+    if(!scanSound.isPlaying()){
+      scanSound.play()
+    }
+    if(yOffset > capture.height){
+      doneSound.play()
+      state = 2
+    }
+  }else{
+    image(capture,-3000,0,1600,desiredWindowHeight,
+        0, 0, doorwayWidth, doorwayHeight)
+  }
+  let cutOutLarge = capture.get(doorwayWidth,0,
+    capture.width-doorwayWidth,capture.height)
+  cutOutLarge.filter(GRAY)
+  image(cutOutLarge,-8200,0,desiredWindowWidth/2,desiredWindowHeight)
+  image(newGraphic, -8200,0,desiredWindowWidth/2,desiredWindowHeight,doorwayWidth,0,
+    capture.width-doorwayWidth,capture.height)
+  
+  if(state != 0){
+    newGraphic.filter(GRAY)
+    image(newGraphic, -3000 ,0,1600,map(yOffset,0,doorwayHeight,0,desiredWindowHeight),
+      0, 0, doorwayWidth, yOffset)
+  }
   pop()
+  noStroke()
+  fill(0,0,0,180)
+  rect(0,height-400,3000,400)
+  fill(100,200,100)
+  textSize(240)
+  text(status[state],600,height-100)
   //image(newGraphic, 0, 0, desiredWindowHeight, cutOutWidth);
   //filter(GRAY)
 }
@@ -73,6 +104,7 @@ function gotPoses(posesRaw) {
       //skeleton = poses[0].skeleton;
     }
   }
+  
   bodies.managePoses(poses);
 }
 
@@ -96,11 +128,11 @@ function modelReady() {
 }
 
 function keyPressed() {
-  if (key == "z"){
-    print(capture.height,capture.width)
+  if ( key == "s"){
+    bodies.makeOneSick()
   }
-  if (key == "a") {
-    print(windowHeight,windowWidth);
+  if ( key == "v"){
+    state = 1
   }
 }
 function windowResized() {
@@ -113,4 +145,25 @@ function drawKeypoints(pose) {
     fill(255, 255, 255)
     circle(keypoint.position.x, keypoint.position.y, 10);
   }
+}
+function waveThing(img){
+  let yWave = 40
+  let xWave = 0
+  print(img.width)
+  let i = yOffset * img.width * 4
+  while(i < (yOffset + yWave) * img.width * 4){
+    let j = i + (img.width - xWave) * 4
+    let temp = img.pixels[i]
+    img.pixels[i] = img.pixels[j]
+    img.pixels[j] = temp
+    if(i%4 == 0){
+      img.pixels[i] += 80;
+      img.pixels[i+1] -= 80;
+      img.pixels[i+2] -= 80;
+
+      }
+    if(i%(img.width*8)==0){xWave+=1}
+    i++
+  }
+    yOffset+=4
 }
