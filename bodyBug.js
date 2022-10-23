@@ -11,9 +11,9 @@ class BodyBug{
     }
     display(keypoints, z, c){
         c.noStroke()
-        //Follow the posenet pose slowly
-        this.x = 0.6*this.x + 0.4* (keypoints[this.keypoint].position.x +this.xOffset)
-        this.y = 0.6*this.y + 0.4* (keypoints[this.keypoint].position.y + this.yOffset)
+        //Follow the posenet pose without jumping from one place to another
+        this.x = 0.6*this.x + 0.4*(keypoints[this.keypoint].position.x +this.xOffset)
+        this.y = 0.6*this.y + 0.4*(keypoints[this.keypoint].position.y + this.yOffset)
         if(!this.angry){
             c.fill(this.color)
             c.circle(this.x,this.y, this.r)
